@@ -26,47 +26,39 @@ namespace EMployeeManagementWithoutEntity.Controllers
             return Json(employees);
         }
         //update employee
-        // GET: Employee/AddOrEdit/5
-        [HttpGet]
-        public IActionResult AddOrEdit(int? id)
+        // POST: Employee/EditEmployee
+        [HttpPost]
+        public IActionResult EditEmployee([FromBody] EmployeeViewModel employeeViewModel)
         {
-            if (id.HasValue)
+            if (employeeViewModel == null || !ModelState.IsValid)
             {
-                var employeeViewModel = _employeeService.GetEmployeeById(id.Value);
-                if (employeeViewModel == null)
-                {
-                    return NotFound("Employee not found.");
-                }
-                return Ok(employeeViewModel); // Return the employee data
+                return BadRequest(new { message = "Invalid employee data." });
             }
-            return BadRequest("Employee ID is required for editing.");
+            if (!_employeeService.EmployeeExists(employeeViewModel.EmployeeID))
+            {
+                return NotFound(new { message = "Employee not found." });
+            }
+            _employeeService.UpdateEmployee(employeeViewModel);
+
+            return Json(new { message = "Employee updated successfully." });
         }
 
-        
+
         // POST: Employee/AddOrEdit/0
         [HttpPost]
-        public IActionResult AddOrEdit([FromBody] EmployeeViewModel employeeViewModel)
+        public IActionResult AddNewEmp([FromBody] EmployeeViewModel employeeViewModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest("Invalid data.");
             }
 
-            if (employeeViewModel.EmployeeID == 0)
-            {
+
+            
                 _employeeService.AddEmployee(employeeViewModel);
                 return Ok("Employee added successfully.");
             }
-            else
-            {
-                if (!_employeeService.EmployeeExists(employeeViewModel.EmployeeID))
-                {
-                    return NotFound("Employee not found.");
-                }
-                _employeeService.UpdateEmployee(employeeViewModel);
-                return Ok("Employee updated successfully.");
-            }
-        }
+            
 
 
         //Employee/delete
